@@ -1,0 +1,8 @@
+flask
+google-genai
+numpy
+PyPDF2
+python-dotenv
+crawl4ai
+duckduckgo-search
+playwright

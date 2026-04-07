@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Perplexity AI — Intelligent Assistant">
+    <title>Perplexity AI</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+</head>
+<body>
+
+    <!-- ========== SIDEBAR ========== -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar__top">
+            <div class="sidebar__brand">
+                <button class="sidebar__toggle" id="sidebar-toggle" aria-label="Toggle sidebar">
+                    <i class="ph ph-sidebar-simple"></i>
+                </button>
+                <span class="sidebar__logo">perplexity</span>
+            </div>
+
+            <button class="btn-new-chat" id="btn-new-chat">
+                <i class="ph ph-plus"></i>
+                <span>New Chat</span>
+            </button>
+        </div>
+
+        <nav class="sidebar__nav">
+            <button class="nav-item active" id="nav-chat">
+                <i class="ph ph-chat-circle"></i>
+                <span>AI Chat</span>
+            </button>
+            <button class="nav-item" id="nav-dealrooms">
+                <i class="ph ph-briefcase"></i>
+                <span>DealRooms</span>
+            </button>
+        </nav>
+
+        <div class="sidebar__history">
+            <h3 class="sidebar__history-title">
+                <i class="ph ph-clock-counter-clockwise"></i>
+                Chat History
+            </h3>
+            <div class="sidebar__history-list" id="history-list">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <div class="sidebar__bottom">
+            <button class="btn-clear-all" id="btn-clear-all">
+                <i class="ph ph-trash"></i>
+                <span>Clear All History</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- ========== SIDEBAR OVERLAY (mobile) ========== -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <!-- ========== MAIN ========== -->
+    <main class="main" id="main">
+
+        <!-- Top bar -->
+        <header class="topbar">
+            <button class="topbar__menu" id="topbar-menu" aria-label="Open sidebar">
+                <i class="ph ph-list"></i>
+            </button>
+            <span class="topbar__title" id="topbar-title">New Chat</span>
+            <div class="topbar__spacer"></div>
+        </header>
+
+        <!-- HOME VIEW -->
+        <div class="home-view" id="home-view">
+            <div class="home-content">
+                <h1 class="home-brand">perplexity</h1>
+                <p class="home-subtitle">Ask anything. Get brilliant answers.</p>
+
+                <div class="home-search">
+                    <form id="search-form" class="search-box">
+                        <div class="file-badge" id="file-badge-home" style="display:none;">
+                            <i class="ph ph-file-pdf file-badge__icon"></i>
+                            <span class="file-badge__name"></span>
+                            <button type="button" class="file-badge__remove" aria-label="Remove file"><i class="ph ph-x"></i></button>
+                        </div>
+                        <textarea
+                            id="search-input"
+                            class="search-box__input"
+                            placeholder="Ask anything..."
+                            rows="1"
+                        ></textarea>
+                        <div class="search-box__actions">
+                            <button type="button" class="btn-attach" id="home-attach-btn" aria-label="Attach PDF">
+                                <i class="ph ph-paperclip"></i>
+                            </button>
+                            <button type="button" class="btn-voice" id="home-voice-btn" aria-label="Voice input">
+                                <i class="ph ph-microphone"></i>
+                            </button>
+                            <button type="submit" class="btn-send" aria-label="Send">
+                                <i class="ph ph-arrow-right"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="home-suggestions">
+                    <button class="suggestion-chip"><i class="ph ph-code"></i> Create a prototype</button>
+                    <button class="suggestion-chip"><i class="ph ph-lightbulb"></i> Help me learn</button>
+                    <button class="suggestion-chip"><i class="ph ph-briefcase"></i> Build a business</button>
+                    <button class="suggestion-chip"><i class="ph ph-math-operations"></i> Solve an equation</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- CHAT VIEW -->
+        <div class="chat-view" id="chat-view" style="display:none;">
+            <div class="chat-messages" id="chat-messages"></div>
+
+            <div class="chat-input-bar">
+                <form id="chat-form" class="chat-input-box">
+                    <div class="file-badge" id="file-badge-chat" style="display:none;">
+                        <i class="ph ph-file-pdf file-badge__icon"></i>
+                        <span class="file-badge__name"></span>
+                        <button type="button" class="file-badge__remove" aria-label="Remove file"><i class="ph ph-x"></i></button>
+                    </div>
+                    <textarea
+                        id="chat-input"
+                        class="chat-input-box__input"
+                        placeholder="Ask a follow-up..."
+                        rows="1"
+                    ></textarea>
+                    <div class="chat-input-box__actions">
+                        <button type="button" class="btn-attach" id="chat-attach-btn" aria-label="Attach PDF">
+                            <i class="ph ph-paperclip"></i>
+                        </button>
+                        <button type="button" class="btn-voice" id="chat-voice-btn" aria-label="Voice input">
+                            <i class="ph ph-microphone"></i>
+                        </button>
+                        <button type="submit" class="btn-send" aria-label="Send">
+                            <i class="ph ph-arrow-right"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- DEALROOM VIEW -->
+        <div class="dealroom-view" id="dealroom-view" style="display:none;">
+            <header class="dealroom-header">
+                <div class="dealroom-header__title">
+                    <h1 id="dr-title">DealRoom Dashboard</h1>
+                    <p id="dr-subtitle">Manage secure data rooms and analyze deal intelligence.</p>
+                </div>
+                <button class="btn-new-chat" id="btn-create-room">
+                    <i class="ph ph-plus"></i>
+                    <span>Create Room</span>
+                </button>
+            </header>
+
+            <div id="dr-dashboard">
+                <div class="room-grid" id="room-grid">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <div id="dr-room-detail" style="display:none;">
+                <button class="nav-item" id="btn-back-to-rooms" style="margin-bottom:1rem; width:fit-content;">
+                    <i class="ph ph-arrow-left"></i> Back to Rooms
+                </button>
+                
+                <div class="room-detail">
+                    <div class="room-card" style="cursor:default; transform:none !important; border-color:var(--color-brand);">
+                         <div class="room-card__header">
+                            <div class="room-card__icon"><i class="ph ph-briefcase"></i></div>
+                            <span class="room-card__status">Active</span>
+                        </div>
+                        <div class="room-card__body">
+                            <h2 id="active-room-name">Loading...</h2>
+                            <p id="active-room-desc"></p>
+                        </div>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:2rem;">
+                        <div>
+                            <h3 class="room-detail__section-title">Documents</h3>
+                            <div id="room-docs-list">
+                                <!-- Docs list -->
+                            </div>
+                            <button class="suggestion-chip" id="btn-upload-dr" style="margin-top:1rem;">
+                                <i class="ph ph-upload"></i> Upload Document
+                            </button>
+                        </div>
+                        <div>
+                            <h3 class="room-detail__section-title">Actions & Intelligence</h3>
+                            <div style="display:grid; grid-template-columns:1fr; gap:0.5rem;">
+                                <button class="btn-new-chat" id="btn-launch-rag">
+                                    <i class="ph ph-sparkle"></i> Launch AI Analyst
+                                </button>
+                                <button class="suggestion-chip" id="btn-generate-report" style="width:100%; justify-content:center;">
+                                    <i class="ph ph-file-text"></i> Generate DD Report
+                                </button>
+                                <button class="suggestion-chip" id="btn-view-trends" style="width:100%; justify-content:center;">
+                                    <i class="ph ph-chart-line"></i> View Financial Trends
+                                </button>
+                            </div>
+
+                            <h3 class="room-detail__section-title" style="margin-top:2rem;">Intelligence Reports</h3>
+                            <div class="report-list" id="room-reports-list">
+                                <!-- Populated by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ========== FILE UPLOAD ========== -->
+    <input type="file" id="global-file-upload" accept="application/pdf" style="display:none;">
+
+    <!-- ========== TOAST CONTAINER ========== -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- ========== AUTH MODAL ========== -->
+    <div class="modal-overlay" id="auth-modal" style="display:none;">
+        <div class="modal-card">
+            <div class="modal-card__icon" style="color:var(--color-brand);">
+                <i class="ph ph-lock"></i>
+            </div>
+            <h3 class="modal-card__title" id="auth-title">Welcome to DealRoom</h3>
+            <p class="modal-card__desc" id="auth-desc">Please login to access secure deal workspaces.</p>
+            
+            <form id="auth-form" class="auth-form">
+                <div class="input-group" id="group-name" style="display:none;">
+                    <label for="reg-name">Full Name</label>
+                    <input type="text" id="reg-name" class="input-field" placeholder="Jane Doe">
+                </div>
+                <div class="input-group">
+                    <label for="auth-email">Email Address</label>
+                    <input type="email" id="auth-email" class="input-field" placeholder="analyst@fund.com" required>
+                </div>
+                <div class="input-group">
+                    <label for="auth-password">Password</label>
+                    <input type="password" id="auth-password" class="input-field" placeholder="••••••••" required>
+                </div>
+                
+                <button type="submit" class="btn-new-chat" style="margin-top:0.5rem; width:100%;">
+                    <span id="auth-submit-text">Login</span>
+                </button>
+            </form>
+
+            <div class="auth-switch">
+                <span id="auth-switch-text">Don't have an account?</span>
+                <button id="btn-toggle-auth">Register</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== CREATE ROOM MODAL ========== -->
+    <div class="modal-overlay" id="room-modal" style="display:none;">
+        <div class="modal-card">
+            <div class="modal-card__icon" style="color:var(--color-brand);">
+                <i class="ph ph-folder-plus"></i>
+            </div>
+            <h3 class="modal-card__title">Create New DealRoom</h3>
+            <p class="modal-card__desc">Set up an isolated workspace for your next deal.</p>
+            
+            <form id="room-form" class="auth-form">
+                <div class="input-group">
+                    <label for="room-name">Deal Name</label>
+                    <input type="text" id="room-name" class="input-field" placeholder="e.g. Project Apollo" required>
+                </div>
+                <div class="input-group">
+                    <label for="room-desc">Description (Optional)</label>
+                    <textarea id="room-desc" class="input-field" style="resize:none;" rows="3"></textarea>
+                </div>
+                
+                <div class="modal-card__actions" style="margin-top:1rem;">
+                    <button type="button" class="modal-btn modal-btn--cancel" id="btn-close-room-modal">Cancel</button>
+                    <button type="submit" class="modal-btn" style="background:var(--color-brand); color:white;">Create</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ========== REPORT VIEWER MODAL ========== -->
+    <div class="modal-overlay" id="report-modal" style="display:none;">
+        <div class="modal-card report-viewer">
+            <div class="modal-card__icon" style="color:var(--color-brand); margin-bottom:0.5rem;">
+                <i class="ph ph-file-text"></i>
+            </div>
+            <h3 class="modal-card__title">Due Diligence Report</h3>
+            <div class="report-viewer__content" id="report-md-content">
+                <!-- Markdown rendered here -->
+            </div>
+            <div class="report-viewer__actions">
+                <button class="modal-btn modal-btn--cancel" id="btn-copy-report">Copy Text</button>
+                <button class="modal-btn modal-btn--cancel" id="btn-download-report">Download .MD</button>
+                <button class="modal-btn" id="btn-close-report" style="background:var(--color-brand); color:white;">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== FINANCIAL TRENDS MODAL ========== -->
+    <div class="modal-overlay" id="trends-modal" style="display:none;">
+        <div class="modal-card trends-viewer">
+            <header class="modal-card__header" style="flex-direction:column; align-items:flex-start; gap:0.5rem; margin-bottom:1.5rem;">
+                <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <div class="modal-card__icon" style="color:var(--color-brand); margin-bottom:0;">
+                         <i class="ph ph-chart-line-up"></i>
+                    </div>
+                    <h3 class="modal-card__title" style="margin-bottom:0;">Financial Trends</h3>
+                </div>
+                <p class="modal-card__desc">Interactive analysis of deal room financial data.</p>
+            </header>
+
+            <div class="trends-container">
+                <div class="chart-card">
+                    <h4 class="chart-title">Revenue Growth</h4>
+                    <div class="chart-canvas-wrapper">
+                        <canvas id="chart-revenue"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <h4 class="chart-title">EBITDA Performance</h4>
+                    <div class="chart-canvas-wrapper">
+                        <canvas id="chart-ebitda"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-card__actions" style="margin-top:2rem;">
+                <button class="modal-btn modal-btn--cancel" id="btn-close-trends">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== GENERATION LOADER ========== -->
+    <div class="gen-overlay" id="gen-overlay" style="display:none;">
+        <div class="gen-spinner"></div>
+        <div class="gen-text">GENERATING INTELLIGENCE...</div>
+        <p style="color:var(--color-text-muted); font-size:var(--fs-sm);">Analyzing documents and market data. This may take 20s.</p>
+    </div>
+
+    <!-- ========== CONFIRM MODAL ========== -->
+    <div class="modal-overlay" id="confirm-modal" style="display:none;">
+        <div class="modal-card">
+            <div class="modal-card__icon">
+                <i class="ph ph-warning-circle"></i>
+            </div>
+            <h3 class="modal-card__title">Clear All History?</h3>
+            <p class="modal-card__desc">This will permanently delete all saved conversations. This action cannot be undone.</p>
+            <div class="modal-card__actions">
+                <button class="modal-btn modal-btn--cancel" id="modal-cancel">Cancel</button>
+                <button class="modal-btn modal-btn--danger" id="modal-confirm">Delete All</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts loaded via defer in <head> -->
+</body>
+</html>
